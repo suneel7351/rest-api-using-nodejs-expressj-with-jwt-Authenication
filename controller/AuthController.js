@@ -66,6 +66,47 @@ function AuthController() {
         res.status(500).send("something went wrong");
       }
     },
+    async login(req, res) {
+      const { email, password } = req.body;
+      console.log(email, password);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          return res
+            .status(400)
+            .json({ error: "Please login with correct credentials" });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res
+            .status(400)
+            .json({ error: "Please login with correct credentials" });
+        }
+        const payload = {
+          user: {
+            id: user.id,
+          },
+        };
+        const jwtToken = jwt.sign(payload, process.env.JWT_SECERET);
+        res.status(200).json({ jwtToken });
+      } catch (error) {
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    },
+    async getuser(req, res) {
+      try {
+        userId = req.user.id;
+        const user = await User.findById(userId).select("-password");
+        res.status(200).json({ user });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    },
   };
 }
 
