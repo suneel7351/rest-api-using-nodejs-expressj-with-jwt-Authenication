@@ -3,6 +3,10 @@ const { Schema } = mongoose;
 
 const NotesSchema = new Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "userRegisteration",
+    },
     title: {
       type: String,
       required: true,

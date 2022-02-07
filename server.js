@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 require("./routes/AuthRoutes")(app);
+require("./routes/NotesRoutes")(app);
 
 app.listen(PORT, function () {
   console.log(`Server is running on ${PORT}`);
