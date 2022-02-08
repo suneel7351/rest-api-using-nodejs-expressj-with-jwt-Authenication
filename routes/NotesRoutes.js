@@ -15,6 +15,12 @@ function NotesRoutes(app) {
     ],
     require("../controller/NotesController")().addnote
   );
+  app.put(
+    "/updatenote/:id",
+    fetuser,
+    require("../controller/NotesController")().updatenotes
+  );
+  app.delete('/deletenote/:id',fetuser,require('../controller/NotesController')().deletenotes)
 }
 
 module.exports = NotesRoutes;
