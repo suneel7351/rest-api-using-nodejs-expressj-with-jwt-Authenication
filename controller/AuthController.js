@@ -26,8 +26,9 @@ function AuthController() {
       res.send("Hello world");
     },
     async register(req, res) {
+      let success = false;
       const { name, email, password } = req.body;
-      console.log(name, email, password);
+     
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -48,53 +49,65 @@ function AuthController() {
           const data = await user.save();
           if (data) {
             console.log("Register successfully");
+            success = true;
             const userId = {
               user: {
                 id: data._id,
               },
             };
             const jwtToken = jwt.sign(userId, process.env.JWT_SECERET);
-            res.json({ jwtToken });
+            res.json({ success, jwtToken });
           }
         } else {
-          console.log("Already registered");
-          return res.status(208).json({ err: "This email is already taken" });
+          success = false;
+       
+          return res
+            .status(208)
+            .json({ success, err: "This email is already taken" });
         }
       } catch (error) {
-        console.log("Something went wrong");
+     
         console.log(error);
         res.status(500).send("something went wrong");
       }
     },
     async login(req, res) {
+      let success = false;
       const { email, password } = req.body;
-      console.log(email, password);
+     
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        success = false;
+        return res.status(400).json({ success, errors: errors.array() });
       }
       try {
         const user = await User.findOne({ email });
         if (!user) {
+          success = false;
           return res
             .status(400)
-            .json({ error: "Please login with correct credentials" });
+            .json({ success, error: "Please login with correct credentials" });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+          success = false;
           return res
             .status(400)
-            .json({ error: "Please login with correct credentials" });
+            .json({ success, error: "Please login with correct credentials" });
         }
         const payload = {
           user: {
             id: user.id,
           },
         };
+        success = true;
         const jwtToken = jwt.sign(payload, process.env.JWT_SECERET);
-        res.status(200).json({ jwtToken });
+        res.status(200).json({ success, jwtToken });
       } catch (error) {
-        return res.status(500).json({ error: "Internal server error" });
+        success = false;
+        return res
+          .status(500)
+          .json({ success, error: "Internal server error" });
       }
     },
     async getuser(req, res) {
@@ -103,7 +116,7 @@ function AuthController() {
         const user = await User.findById(userId).select("-password");
         res.status(200).json({ user });
       } catch (error) {
-        console.log(error);
+       
         return res.status(500).json({ error: "Internal server error" });
       }
     },
